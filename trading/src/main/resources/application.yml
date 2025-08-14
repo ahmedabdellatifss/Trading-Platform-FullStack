@@ -1,0 +1,22 @@
+server:
+  port: 5455
+
+spring:
+  application:
+    name: trading
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/trading_db
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update # options: create, create-drop, update, validate
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+
