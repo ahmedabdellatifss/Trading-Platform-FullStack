@@ -9,6 +9,6 @@ public interface UserService {
     public User findUserByEmail(String email) throws Exception;
     public User findUserById(Long id) throws Exception;
     public User enableTwoFactorAuthentication(VerificationType verificationType, String sendTo, User user);
-    User UpdatePassword(User user, String newPassword);
+    User updatePassword(User user, String newPassword);
 
 }

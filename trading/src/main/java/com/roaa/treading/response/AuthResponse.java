@@ -1,4 +1,4 @@
-package com.roaa.treading.DTO;
+package com.roaa.treading.response;
 
 import lombok.Data;
 

@@ -1,6 +1,6 @@
 package com.roaa.treading.controller;
 
-import com.roaa.treading.DTO.AuthResponse;
+import com.roaa.treading.response.AuthResponse;
 import com.roaa.treading.config.JwtProvider;
 import com.roaa.treading.entity.TwoFactorOTP;
 import com.roaa.treading.entity.User;
@@ -19,9 +19,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
