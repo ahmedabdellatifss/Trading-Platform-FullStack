@@ -1,6 +1,6 @@
 package com.roaa.treading.entity;
 
-import com.roaa.treading.domain.VerificationType;
+import com.roaa.treading.enums.VerificationType;
 import jakarta.persistence.*;
 import lombok.Data;
 

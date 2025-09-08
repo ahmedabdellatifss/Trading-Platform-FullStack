@@ -1,6 +1,6 @@
 package com.roaa.treading.service;
 
-import com.roaa.treading.domain.VerificationType;
+import com.roaa.treading.enums.VerificationType;
 import com.roaa.treading.entity.User;
 
 public interface UserService {

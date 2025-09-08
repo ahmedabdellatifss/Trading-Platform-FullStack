@@ -1,7 +1,7 @@
 package com.roaa.treading.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.roaa.treading.domain.USER_ROLE;
+import com.roaa.treading.enums.USER_ROLE;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;

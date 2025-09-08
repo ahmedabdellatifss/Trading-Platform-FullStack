@@ -1,6 +1,6 @@
 package com.roaa.treading.service;
 
-import com.roaa.treading.domain.VerificationType;
+import com.roaa.treading.enums.VerificationType;
 import com.roaa.treading.entity.User;
 import com.roaa.treading.entity.VerificationCode;
 import com.roaa.treading.repository.VerificationCodeRepository;

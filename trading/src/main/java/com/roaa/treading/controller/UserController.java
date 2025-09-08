@@ -3,7 +3,7 @@ package com.roaa.treading.controller;
 import com.roaa.treading.request.ResetPasswordRequest;
 import com.roaa.treading.response.ApiResponse;
 import com.roaa.treading.response.AuthResponse;
-import com.roaa.treading.domain.VerificationType;
+import com.roaa.treading.enums.VerificationType;
 import com.roaa.treading.entity.ForgotPasswordToken;
 import com.roaa.treading.entity.User;
 import com.roaa.treading.entity.VerificationCode;

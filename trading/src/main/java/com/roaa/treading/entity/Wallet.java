@@ -1,26 +1,21 @@
 package com.roaa.treading.entity;
 
-import com.roaa.treading.enums.VerificationType;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Entity
 @Data
-public class VerificationCode {
+public class Wallet {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String otp;
-
     @OneToOne
     private User user;
 
-    private String email;
-
-    private String mobile;
-
-    private VerificationType verificationType;
+    private BigDecimal balance;
 
 }

@@ -1,7 +1,7 @@
 package com.roaa.treading.service;
 
 import com.roaa.treading.config.JwtProvider;
-import com.roaa.treading.domain.VerificationType;
+import com.roaa.treading.enums.VerificationType;
 import com.roaa.treading.entity.TwoFactorAuth;
 import com.roaa.treading.entity.User;
 import com.roaa.treading.repository.UserRepository;

@@ -1,4 +1,4 @@
-package com.roaa.treading.domain;
+package com.roaa.treading.enums;
 
 public enum USER_ROLE {
 
