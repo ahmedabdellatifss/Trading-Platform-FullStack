@@ -4,6 +4,7 @@ import com.roaa.treading.entity.Order;
 import com.roaa.treading.entity.User;
 import com.roaa.treading.entity.Wallet;
 import com.roaa.treading.entity.WalletTransaction;
+import com.roaa.treading.service.OrderService;
 import com.roaa.treading.service.UserService;
 import com.roaa.treading.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ public class WalletController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired OrderService orderService;
 
     @GetMapping("")
     public ResponseEntity<Wallet> getUserWallet(@RequestHeader("Authorization") String jwt) throws Exception {
@@ -52,5 +55,7 @@ public class WalletController {
         Order order = orderService.getOrderById(orderId);
 
         Wallet wallet = walletService.payOrderPayment(order, user);
+
+        return new ResponseEntity<>(wallet, HttpStatus.ACCEPTED);
     }
 }
