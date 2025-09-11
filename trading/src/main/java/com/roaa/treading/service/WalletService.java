@@ -6,7 +6,7 @@ import com.roaa.treading.entity.Wallet;
 
 public interface WalletService {
 
-    Wallet getUserWallet(User user);
+    Wallet getUserWallet(User user) throws Exception;
 
     Wallet addBalance(Wallet wallet, Long money);
 
