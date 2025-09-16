@@ -1,10 +1,9 @@
 package com.roaa.treading.controller;
 
-import com.roaa.treading.entity.Order;
-import com.roaa.treading.entity.User;
-import com.roaa.treading.entity.Wallet;
-import com.roaa.treading.entity.WalletTransaction;
+import com.roaa.treading.entity.*;
+import com.roaa.treading.response.PaymentResponse;
 import com.roaa.treading.service.OrderService;
+import com.roaa.treading.service.PaymentService;
 import com.roaa.treading.service.UserService;
 import com.roaa.treading.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,11 @@ public class WalletController {
     @Autowired
     private UserService userService;
 
-    @Autowired OrderService orderService;
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private PaymentService paymentService;
 
     @GetMapping("")
     public ResponseEntity<Wallet> getUserWallet(@RequestHeader("Authorization") String jwt) throws Exception {
@@ -33,7 +36,7 @@ public class WalletController {
         return new ResponseEntity<>(wallet, HttpStatus.ACCEPTED);
     }
 
-    @PostMapping("/{walletId}/transfer")
+    @PutMapping("/{walletId}/transfer")
     public ResponseEntity<Wallet> walletToWalletTransfer(
             @RequestHeader("Authorization") String jwt,
             @PathVariable Long walletId,
@@ -45,7 +48,7 @@ public class WalletController {
         return new ResponseEntity<>(wallet, HttpStatus.ACCEPTED);
     }
 
-    @PostMapping("/order/{orderId}/pay")
+    @PutMapping("/order/{orderId}/pay")
     public ResponseEntity<Wallet> payOrderPayment(
             @RequestHeader("Authorization") String jwt,
             @PathVariable Long orderId
@@ -57,5 +60,29 @@ public class WalletController {
         Wallet wallet = walletService.payOrderPayment(order, user);
 
         return new ResponseEntity<>(wallet, HttpStatus.ACCEPTED);
+
+    }
+
+    @PutMapping("/deposit")
+    public ResponseEntity<Wallet> addBalanceToWallet(
+            @RequestHeader("Authorization") String jwt,
+            @RequestParam(name = "order_id") Long orderId,
+            @RequestParam(name = "payment_id") String paymentId
+
+    ) throws Exception {
+        User user = userService.findUserByJwt(jwt);
+
+        Wallet wallet = walletService.getUserWallet(user);
+
+        PaymentOrder order = paymentService.getPaymentOrderById(orderId);
+
+        Boolean status = paymentService.ProceedPaymentOrder(order, paymentId);
+
+        if(status){
+            wallet = walletService.addBalance(wallet, order.getAmount());
+        }
+
+        return new ResponseEntity<>(wallet, HttpStatus.ACCEPTED);
+
     }
 }

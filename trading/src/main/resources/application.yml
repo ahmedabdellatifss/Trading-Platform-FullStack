@@ -20,3 +20,11 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
 
 
+stripe:
+  api:
+    key: sk_test_1234567890abcdef
+
+razorpay:
+  api:
+    key: rzp_test_abc123
+    secret: secret_456xyz
