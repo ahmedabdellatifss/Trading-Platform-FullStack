@@ -13,10 +13,14 @@ public class PaymentOrder {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    private Long paymobOrderId;
+
     private Long amount;
 
+    @Enumerated(EnumType.STRING)
     private PaymentOrderStatus status;
 
+    @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
     @ManyToOne

@@ -74,7 +74,7 @@ public class OrderServiceImpl implements OrderService{
         }
         double buyPrice = coin.getCurrentPrice();
 
-        OrderItem orderItem = createOrderItem(coin, quantity,buyPrice,0);
+        OrderItem orderItem = createOrderItem(coin, quantity, buyPrice,0);
 
         Order order = createOrder(user,orderItem,OrderType.BUY);
         orderItem.setOrder(order);

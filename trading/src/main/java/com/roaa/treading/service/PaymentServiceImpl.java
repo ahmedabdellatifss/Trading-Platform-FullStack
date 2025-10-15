@@ -1,9 +1,15 @@
 package com.roaa.treading.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.razorpay.Payment;
 import com.razorpay.PaymentLink;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
+import com.roaa.treading.config.PaymobConfig;
+import com.roaa.treading.config.RazorpayConfig;
+import com.roaa.treading.config.StripeConfig;
 import com.roaa.treading.entity.PaymentOrder;
 import com.roaa.treading.entity.User;
 import com.roaa.treading.enums.PaymentMethod;
@@ -14,31 +20,116 @@ import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
-import lombok.AllArgsConstructor;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
-@AllArgsConstructor
 public class PaymentServiceImpl implements PaymentService{
 
-    private final PaymentOrderRepository paymentOrderRepository;
 
-    @Value("${stripe.api.key}")
-    private String stripeApiKey;
+    @Autowired
+    private PaymentOrderRepository paymentOrderRepository;
 
-    @Value("${razorpay.api.key}")
-    private String apiKey;
+    private final StripeConfig stripeConfig;
+    private final RazorpayConfig razorpayConfig;
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final PaymobConfig config;
 
-    @Value("${razorpay.api.secret}")
-    private String apiSecretKey;
+    public PaymentServiceImpl(StripeConfig stripeConfig, RazorpayConfig razorpayConfig, PaymobConfig paymobConfig) {
+        this.stripeConfig = stripeConfig;
+        this.razorpayConfig = razorpayConfig;
+        this.config = paymobConfig;
+    }
+
+    // Step 1: Get Auth Token
+    public String getAuthToken() throws Exception {
+        String url = config.getBaseUrl() + "/auth/tokens";
+
+        Map<String, String> request = new HashMap<>();
+        request.put("api_key", config.getApiKey());
+
+        ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+        JsonNode node = objectMapper.readTree(response.getBody());
+
+        return node.get("token").asText();
+    }
+
+    // Step 2: Create Order for PayMob gateway platform
+    public Long createPayMobOrder(String token, int amountCents, String currency, String internalOrderId) throws Exception {
+        String url = config.getBaseUrl() + "/ecommerce/orders";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("amount_cents", amountCents);
+        request.put("currency", currency);
+        request.put("merchant_order_id", internalOrderId);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+        JsonNode node = objectMapper.readTree(response.getBody());
+
+        return node.get("id").asLong();
+    }
+
+    // Step 3: Get Payment Key for payMob gateway platform
+    public String getPaymentKey(String token, Long payMobOrderId, int amountCents, String currency,User user, String internalOrder_id) throws Exception {
+        String url = config.getBaseUrl() + "/acceptance/payment_keys";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, Object> billingData = new HashMap<>();
+        billingData.put("first_name", user.getFullName());
+        billingData.put("last_name", "Mohamed");
+        billingData.put("email", user.getEmail());
+        billingData.put("phone_number", user.getMobile());
+        billingData.put("street", "123 Main Street");
+        billingData.put("building", "13");
+        billingData.put("floor", "5");
+        billingData.put("apartment", "4");
+        billingData.put("city", "Cairo");
+        billingData.put("country", "EG");
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("amount_cents", amountCents);
+        request.put("currency", currency);
+        request.put("order_id", payMobOrderId);
+        request.put("integration_id", config.getIntegrationId());
+        request.put("billing_data", billingData);
+        request.put("redirect_url", "http://localhost:5173/wallet?internalOrder_id="+internalOrder_id);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+        JsonNode node = objectMapper.readTree(response.getBody());
+
+        return node.get("token").asText();
+    }
+
+    // Step 4: Generate Payment URL (iframe)
+    public String getPaymentUrl(String paymentKey) {
+        return "https://accept.paymob.com/api/acceptance/iframes/" + config.getIframeId() + "?payment_token=" + paymentKey;
+    }
+
 
     @Override
     public PaymentOrder createOrder(User user, Long amount, PaymentMethod paymentMethod) {
         PaymentOrder paymentOrder = new PaymentOrder();
         paymentOrder.setUser(user);
         paymentOrder.setAmount(amount);
+        paymentOrder.setStatus(PaymentOrderStatus.PENDING);
         paymentOrder.setPaymentMethod(paymentMethod);
         return paymentOrderRepository.save(paymentOrder);
     }
@@ -49,10 +140,20 @@ public class PaymentServiceImpl implements PaymentService{
     }
 
     @Override
-    public Boolean ProceedPaymentOrder(PaymentOrder paymentOrder, String paymentId) throws RazorpayException {
+    public void linkPaymobOrder(Long internalOrderId, Long paymobOrderId) {
+        PaymentOrder order = paymentOrderRepository.findById(internalOrderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        order.setPaymobOrderId(paymobOrderId);
+        order.setStatus(PaymentOrderStatus.PENDING);
+        paymentOrderRepository.save(order);
+    }
+
+    @Override
+    public Boolean ProceedPaymentOrder(PaymentOrder paymentOrder, String paymentId) throws Exception {
+
         if(paymentOrder.getStatus().equals(PaymentOrderStatus.PENDING)){
             if(paymentOrder.getPaymentMethod().equals(PaymentMethod.RAZORPAY)){
-                RazorpayClient razorpay = new RazorpayClient(apiKey,apiSecretKey);
+                RazorpayClient razorpay = new RazorpayClient(razorpayConfig.getKey(),razorpayConfig.getSecret());
                 Payment payment = razorpay.payments.fetch(paymentId);
 
                 Integer amount = payment.get("amount");
@@ -65,10 +166,29 @@ public class PaymentServiceImpl implements PaymentService{
                 paymentOrder.setStatus(PaymentOrderStatus.FAILED);
                 paymentOrderRepository.save(paymentOrder);
                 return false;
+            } else if (paymentOrder.getPaymentMethod().equals(PaymentMethod.PAYMOB)) {
+                String url = "https://accept.paymob.com/api/ecommerce/orders/" + paymentOrder.getPaymobOrderId();
+                String token = getAuthToken();
+                HttpHeaders headers = new HttpHeaders();
+                headers.setBearerAuth(token); // auth token you got earlier
+                headers.setContentType(MediaType.APPLICATION_JSON);
+
+                HttpEntity<Void> entity = new HttpEntity<>(headers);
+                ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    paymentOrder.setStatus(PaymentOrderStatus.SUCCESS);
+                    return true;
+                } else {
+                    paymentOrder.setStatus(PaymentOrderStatus.FAILED);
+                    paymentOrderRepository.save(paymentOrder);
+                    return false;
+                }
+
             }
-            paymentOrder.setStatus(PaymentOrderStatus.SUCCESS);
+            paymentOrder.setStatus(PaymentOrderStatus.FAILED);
             paymentOrderRepository.save(paymentOrder);
-            return true;
+            return false;
         }
         return false;
     }
@@ -79,7 +199,7 @@ public class PaymentServiceImpl implements PaymentService{
         Long Amount = amount * 100;
         try {
             // Instantiate a Razorpay client with your key ID and secret
-            RazorpayClient razorpayClient = new RazorpayClient(apiKey, apiSecretKey);
+            RazorpayClient razorpayClient = new RazorpayClient(razorpayConfig.getKey(), razorpayConfig.getSecret());
 
             //Create a Json object with Payment link request parameters
             JSONObject paymentLinkRequest = new JSONObject();
@@ -122,7 +242,7 @@ public class PaymentServiceImpl implements PaymentService{
 
     @Override
     public PaymentResponse createStripePaymentLink(User user, Long amount, Long orderId) throws StripeException {
-        Stripe.apiKey = stripeApiKey;
+        Stripe.apiKey = stripeConfig.getApiKey();
 
         SessionCreateParams params = SessionCreateParams.builder()
                 .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
@@ -158,4 +278,5 @@ public class PaymentServiceImpl implements PaymentService{
 
         return res;
     }
+
 }

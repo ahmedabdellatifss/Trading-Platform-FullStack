@@ -1,7 +1,5 @@
 package com.roaa.treading.entity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -12,7 +10,10 @@ import java.time.LocalDateTime;
 public class Coin {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    private String apiId;  // CoinGecko's string ID ("bitcoin", "ethereum")
 
     private String symbol;
 

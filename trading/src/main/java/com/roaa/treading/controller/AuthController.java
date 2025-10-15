@@ -8,6 +8,7 @@ import com.roaa.treading.repository.UserRepository;
 import com.roaa.treading.service.CustomeUserDetailsService;
 import com.roaa.treading.service.EmailService;
 import com.roaa.treading.service.TwoFactorOtpService;
+import com.roaa.treading.service.WatchListService;
 import com.roaa.treading.utils.OtpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,9 @@ public class AuthController {
     private TwoFactorOtpService twoFactorOtpService;
 
     @Autowired
+    private WatchListService watchListService;
+
+    @Autowired
     private EmailService emailService;
 
     @PostMapping("/signup")
@@ -51,6 +55,8 @@ public class AuthController {
         newUser.setMobile(user.getMobile());
 
         userRepository.save(newUser);
+
+        watchListService.createWatchList(newUser);
 
         Authentication auth = new UsernamePasswordAuthenticationToken(
                 user.getEmail(),

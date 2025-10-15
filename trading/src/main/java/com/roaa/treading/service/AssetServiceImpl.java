@@ -17,36 +17,46 @@ public class AssetServiceImpl implements AssetService{
 
     @Override
     public Asset createAsset(User user, Coin coin, double quantity) {
-        return null;
+        Asset asset = new Asset();
+        asset.setUser(user);
+        asset.setCoin(coin);
+        asset.setQuantity(quantity);
+        return assetRepository.save(asset);
     }
 
     @Override
     public Asset getAssetById(Long id) {
-        return null;
+        return assetRepository.findById(id).orElse(null);
     }
 
     @Override
-    public Asset getAssetByUserIdAndId(Long userId, Long assetId) {
-        return null;
+    public Asset getAssetByUserIdAndId(Long userId, Long coinId) {
+        return assetRepository.getAssetByUserIdAndCoinId(userId, coinId);
     }
 
     @Override
     public List<Asset> getUsersAssets(Long userId) {
-        return List.of();
+        return assetRepository.findByUserId(userId);
     }
 
     @Override
     public Asset updateAsset(Long assetId, double quantity) {
-        return null;
+        Asset asset = getAssetById(assetId);
+        asset.setQuantity(quantity);
+        return assetRepository.save(asset);
     }
 
     @Override
-    public Asset findAssetByUserIdAndCoinId(Long userId, String coinId) {
-        return null;
+    public Asset findAssetByUserIdAndCoinId(Long userId, Long coinId) {
+
+        return assetRepository.getAssetByUserIdAndCoinId(userId, coinId);
     }
 
     @Override
     public void deleteAsset(Long assetId) {
-
+        if (!assetRepository.existsById(assetId)) {
+            throw new RuntimeException("Asset not found with id: " + assetId);
+        }
+        assetRepository.deleteById(assetId);;
     }
 }

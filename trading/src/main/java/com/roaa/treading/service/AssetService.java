@@ -12,6 +12,6 @@ public interface AssetService {
     Asset getAssetByUserIdAndId(Long userId, Long assetId);
     List<Asset> getUsersAssets(Long userId);
     Asset updateAsset(Long assetId, double quantity);
-    Asset findAssetByUserIdAndCoinId(Long userId, String coinId);
+    Asset findAssetByUserIdAndCoinId(Long userId, Long coinId);
     void deleteAsset(Long assetId);
 }

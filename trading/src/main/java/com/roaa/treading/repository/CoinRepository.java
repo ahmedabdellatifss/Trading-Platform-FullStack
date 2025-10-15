@@ -3,5 +3,9 @@ package com.roaa.treading.repository;
 import com.roaa.treading.entity.Coin;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CoinRepository extends JpaRepository<Coin, String> {
+import java.util.Optional;
+
+public interface CoinRepository extends JpaRepository<Coin, Long> {
+
+    Optional<Coin> findByApiId(String apiId);
 }

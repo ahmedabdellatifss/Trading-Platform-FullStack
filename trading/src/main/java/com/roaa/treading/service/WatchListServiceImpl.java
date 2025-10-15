@@ -3,7 +3,6 @@ package com.roaa.treading.service;
 import com.roaa.treading.entity.*;
 import com.roaa.treading.repository.WatchListRepository;
 import lombok.AllArgsConstructor;
-import org.hibernate.sql.ast.tree.expression.CaseSimpleExpression;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

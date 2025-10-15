@@ -27,7 +27,7 @@ public class AssetController {
     @GetMapping("/coin/{coinId}/user")
     public ResponseEntity<Asset> getAssetByUserIdAndCoinId(
             @RequestHeader("Authorization") String jwt,
-            @PathVariable String coinId
+            @PathVariable Long coinId
     ) throws Exception{
         User user = userService.findUserByJwt(jwt);
         Asset asset = assetService.findAssetByUserIdAndCoinId(user.getId(), coinId);

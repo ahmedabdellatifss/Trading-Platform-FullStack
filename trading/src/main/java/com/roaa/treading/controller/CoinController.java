@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roaa.treading.entity.Coin;
 import com.roaa.treading.service.CoinService;
+import com.roaa.treading.service.CoinServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,7 @@ import java.util.List;
 public class CoinController {
 
     @Autowired
-    private CoinService coinService;
+    private CoinServiceImpl coinService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -54,11 +55,18 @@ public class CoinController {
         return ResponseEntity.ok(jsonNode);
     }
 
-    @GetMapping("/treading")
-    ResponseEntity<JsonNode> getTreadingCoin() throws Exception {
-        String res = coinService.getTreadingCoins();
+    @GetMapping("/trending")
+    ResponseEntity<JsonNode> getTrendingCoin() throws Exception {
+        String res = coinService.getTrendingCoins();
         JsonNode jsonNode = objectMapper.readTree(res);
 
+        return ResponseEntity.ok(jsonNode);
+    }
+
+    @GetMapping("/details/{coinId}")
+    ResponseEntity<JsonNode> getCoinDetails(@PathVariable String coinId) throws Exception {
+        String coin = coinService.getCoinDetail(coinId);
+        JsonNode jsonNode = objectMapper.readTree(coin);
         return ResponseEntity.ok(jsonNode);
     }
 }

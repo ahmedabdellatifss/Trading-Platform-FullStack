@@ -1,5 +1,5 @@
 server:
-  port: 5455
+  port: 5454
 
 spring:
   application:
@@ -19,6 +19,11 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
 
+paymob:
+  api-key: ZXlKaGJHY2lPaUpJVXpVeE1pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmpiR0Z6Y3lJNklrMWxjbU5vWVc1MElpd2ljSEp2Wm1sc1pWOXdheUk2TVRBM09UQTBOeXdpYm1GdFpTSTZJbWx1YVhScFlXd2lmUS5IV1NJRVdUZ1ZoaDVvQmZ1OE1tR29TMUszUnFVN0VSMmNoUnBSNGNEQ3EwUjVfclVVdlktT0JhRGxmeThvcmY2RC02bzRyOWRhWGllcVlhbFRFZWhZdw==
+  integration-id: 5307448
+  iframe-id: 963229
+  base-url: https://accept.paymob.com/api
 
 stripe:
   api:
@@ -26,5 +31,6 @@ stripe:
 
 razorpay:
   api:
-    key: rzp_test_abc123
-    secret: secret_456xyz
+    key: rzp_test_BbLwKBVuQvM5Zt
+    secret: KFtSHEnlN03BddjweGF6UsN1
+

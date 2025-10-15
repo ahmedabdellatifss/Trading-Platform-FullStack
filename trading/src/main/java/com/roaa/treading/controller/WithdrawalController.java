@@ -4,6 +4,8 @@ import com.roaa.treading.entity.User;
 import com.roaa.treading.entity.Wallet;
 import com.roaa.treading.entity.WalletTransaction;
 import com.roaa.treading.entity.Withdrawal;
+import com.roaa.treading.enums.WalletTransactionType;
+import com.roaa.treading.service.TransactionService;
 import com.roaa.treading.service.UserService;
 import com.roaa.treading.service.WalletService;
 import com.roaa.treading.service.WithdrawalService;
@@ -11,6 +13,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -23,7 +26,7 @@ public class WithdrawalController {
 
     private final WithdrawalService withdrawalService;
 
-//    private final WalletTransactionService walletTransactionService;
+    private final TransactionService walletTransactionService;
 
     @PostMapping("/api/withdrawal/{amount}")
     public ResponseEntity<?> withdrawalRequest(
@@ -35,7 +38,14 @@ public class WithdrawalController {
         Withdrawal withdrawal = withdrawalService.requestWithdrawal(amount, user);
         walletService.addBalance(userWallet, -withdrawal.getAmount());
 
-        // WalletTransaction
+        walletTransactionService.createWalletTransaction(
+                userWallet,
+                WalletTransactionType.WITHDRAWAL,
+                LocalDate.now(),
+                "102",
+                "bank account withdrawal",
+                withdrawal.getAmount()
+        );
 
         return ResponseEntity.ok(withdrawal);
 
